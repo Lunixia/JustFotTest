@@ -1,0 +1,95 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkSecurityGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "The name for the network security group"
+            }
+        }
+    },
+    "variables":{},
+    "resources": 
+    [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[concat(parameters('networkSecurityGroup'), '.', resourceGroup().name)]",
+            "apiVersion": "2020-06-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "resourcesGroup": "[resourceGroup().name]"
+            },
+            "properties": {
+                "securityRules": [
+                {
+                    "id": "[concat(parameters('networkSecurityGroup'),'-web-access')]",
+                    "name": "web-access",
+                    "properties": {
+                    "description": "Allow HTTP",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRanges": ["80", "8080"],
+                    "sourceAddressPrefix": "Internet",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 200,
+                    "direction": "Inbound"
+                    }
+                },
+                {
+                    "id": "[concat(parameters('networkSecurityGroup'),'-docker-swarm')]",
+                    "name": "docker-swarm",
+                    "properties": {
+                    "description": "Allow docker swarm access",
+                    "protocol": "*",
+                    "sourcePortRange": "*",
+                    "destinationPortRanges": ["2377","7946","4789"],
+                    "sourceAddressPrefix": "Internet",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 150,
+                    "direction": "Inbound"
+                    }
+                },
+                {
+                    "id": "[concat(parameters('networkSecurityGroup'),'-ssh')]",
+                    "name": "ssh-access",
+                    "properties": {
+                    "description": "Allow SSH",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "22",
+                    "sourceAddressPrefix": "Internet",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 100,
+                    "direction": "Inbound"
+                    }
+                },
+                {
+                    "id": "[concat(parameters('networkSecurityGroup'),'-microservices')]",
+                    "name": "microservices-access",
+                    "properties": {
+                    "description": "Allow microservices accesses",
+                    "protocol": "*",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "3000-3010",
+                    "sourceAddressPrefix": "Internet",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 300,
+                    "direction": "Inbound"
+                    }
+                }
+            ]
+        }
+        }
+    ],
+    "outputs":{
+        "networkSecurityGroup": {
+            "type": "string",
+            "value": "[parameters('networkSecurityGroup')]"
+        }
+    }
+}
